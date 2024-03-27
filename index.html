@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rosbridge Connection Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    #container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+    p {
+      margin-bottom: 10px;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 20px;
+    }
+    #status {
+      font-weight: bold;
+      color: #28a745;
+    }
+    #messages {
+      font-weight: bold;
+      padding-left: 20px;
+    }
+    code {
+      background-color: #f8f9fa;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Rosbridge Connection Test</h1>
+    <p>Hey, I'm Mat, and this is my ROS bridge tester website, consider the following points when testings:</p>
+    <ul>
+      <li>Listening on: <code>ws://localhost:9090</code></li>
+      <li>Listening to topic: <span id="topic_name">Pending</span></li>
+    </ul>
+
+    <hr/>
+
+    <p>Connection Status: <span id="status">Pending</span></p>
+    <p>Messages from <span id="topic_name">Pending</span></li></p>
+    <ul id="messages"></ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+
+  <script>
+    const ros = new ROSLIB.Ros({ url: "ws://localhost:9090" });
+
+    ros.on("connection", () => {
+      document.getElementById("status").textContent = "Connected";
+      document.getElementById("status").style.color = "green";
+    });
+
+    ros.on("error", (error) => {
+      document.getElementById("status").textContent = "Error: " + error;
+      document.getElementById("status").style.color = "red";
+    });
+
+    ros.on("close", () => {
+      document.getElementById("status").textContent = "Connection Closed";
+      document.getElementById("status").style.color = "orange";
+    });
+
+    const myTopicListener = new ROSLIB.Topic({
+      ros,
+      name: "/chatter",
+      messageType: "std_msgs/String",
+    });
+
+    myTopicListener.subscribe((message) => {
+      const ul = document.getElementById("messages");
+      const newMessage = document.createElement("li");
+      newMessage.textContent = message.data;
+      ul.appendChild(newMessage);
+      document.getElementById("topic_name").textContent = myTopicListener.name;
+      document.getElementById("topic_name").textContent = myTopicListener.name;
+
+    });
+  </script>
+</body>
+</html>
